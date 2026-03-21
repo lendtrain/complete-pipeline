@@ -17,6 +17,55 @@ Run the complete development pipeline from idea to deployed, tested, and verifie
 
 Execute each phase in order. After each phase, report status to the user before proceeding. If any phase fails, stop and report the failure — do not continue to the next phase.
 
+### Phase 0: Branch Protection Check (MANDATORY)
+
+Before ANY other phase runs, verify the repository has the correct branching model. This is non-negotiable — the pipeline will not proceed without it.
+
+**Required branching model:**
+```
+feature branches --> development --> main
+```
+
+**Check 1: Verify `development` branch exists**
+```bash
+git ls-remote --heads origin development | grep -q development && echo "PASS: development branch exists" || echo "FAIL: no development branch"
+```
+
+**Check 2: Verify branch protection/rulesets on `main`**
+```bash
+# Check rulesets (newer GitHub) or branch protection (legacy)
+gh api repos/{owner}/{repo}/rulesets 2>/dev/null | head -5
+gh api repos/{owner}/{repo}/branches/main/protection 2>/dev/null | head -5
+```
+
+Main must be protected so that:
+- Direct pushes to `main` are blocked
+- Only `development` can merge to `main` (via PR)
+- Direct pushes to `development` are blocked
+- Only feature branches can merge to `development` (via PR)
+
+**Check 3: Verify current branch is `development` (or a feature branch off it)**
+```bash
+git branch --show-current
+```
+
+**If any check fails:**
+
+Invoke the `/protectrepo` skill to set up the correct branching model:
+```
+Invoke Skill: protectrepo
+```
+
+This will:
+1. Create the `development` branch if it doesn't exist
+2. Set up branch protection rules on `main` (only development can merge)
+3. Set up branch protection rules on `development` (only feature branches can merge)
+4. Set `development` as the default branch
+
+**Gate check:** All three checks pass. The repo has `development` branch, `main` is protected, and direct commits to both are blocked.
+
+Report to user: "Phase 0 complete. Branch protection verified: main <-- development <-- feature branches."
+
 ### Phase 1: Plan (/completeplan)
 
 Generate and approve the implementation plan.

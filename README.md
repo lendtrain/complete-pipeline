@@ -11,6 +11,7 @@ One command. Idea to production.
 ## What It Does
 
 ```
+Phase 0: /protectrepo         Verify branch protection (main <-- dev <-- feature)
 Phase 1: /completeplan        Plan, review, revise until approved
 Phase 2: /plan-design-review  UI/UX review of the plan (skipped if no UI)
 Phase 3: /makeprompts         Decompose plan into per-step agent prompts
