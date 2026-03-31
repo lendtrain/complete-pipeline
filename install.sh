@@ -12,6 +12,21 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 echo "Installing Complete Pipeline..."
 echo ""
 
+# Check for gstack (required dependency for browse/QA skills)
+if command -v gstack &>/dev/null || command -v browse &>/dev/null; then
+  echo "✓ gstack detected"
+else
+  echo "gstack not found. Installing..."
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    curl -fsSL https://raw.githubusercontent.com/AskGarry/gstack/main/install.sh | bash
+  elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    curl -fsSL https://raw.githubusercontent.com/AskGarry/gstack/main/install.sh | bash
+  else
+    echo "  ⚠ Auto-install not supported on this OS."
+    echo "  Install manually: https://github.com/AskGarry/gstack"
+  fi
+fi
+
 # Create directories if they don't exist
 mkdir -p "$SKILLS_DIR"
 mkdir -p "$COMMANDS_DIR"
