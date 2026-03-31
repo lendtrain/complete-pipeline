@@ -52,61 +52,68 @@ feature branches --> development --> main
 | [gstack](https://github.com/AskGarry/gstack) | Browse, QA, design review, ship skills | See gstack repo |
 | Git | Version control | Pre-installed on most systems |
 
-### Required Skills (installed via gstack or user-level)
+### All Dependencies Included
 
-The pipeline invokes these skills in sequence. All must be available:
+This repo is **self-contained**. Everything the pipeline needs is included:
 
-| Skill | Source | Purpose |
-|-------|--------|---------|
-| `/completeplan` | User-level (`~/.claude/skills/`) | Planning pipeline |
-| `/createplanprompt` | User-level | Generate planning prompt |
-| `/createplan` | User-level | Generate implementation plan |
-| `/reviewplan` | User-level | Audit plan for correctness |
-| `/reviseplan` | User-level | Fix plan review issues |
-| `/makeprompts` | User-level | Decompose plan into agent prompts |
-| `/build` | User-level | Execute prompts with agents |
-| `/plan-design-review` | gstack | Design review in plan mode |
-| `/design-review` | gstack | Visual QA on live site |
-| `/qa` | gstack | Systematic QA testing |
-| `/ship` | gstack | Version bump, changelog, merge to main |
-| `/browse` | gstack | Headless browser verification |
+**Commands** (in `commands/`):
+| Command | Purpose |
+|---------|---------|
+| `/completeplan` | Full planning pipeline (prompt, plan, review, revise) |
+| `/createplanprompt` | Generate planning prompt from project context |
+| `/createplan` | Produce implementation plan from prompt |
+| `/reviewplan` | Audit plan for dependency/testability/sequence issues |
+| `/reviseplan` | Fix plan review issues |
+| `/makeprompts` | Decompose plan into per-step agent prompts |
+| `/build` | Execute prompts with sequential agents in worktrees |
+| `/protectrepo` | Set up branch protection (main/development/feature) |
+
+**Skills** (in `skills/`):
+| Skill | Purpose |
+|-------|---------|
+| `/browse` | Headless browser for testing |
+| `/design-review` | Visual QA on live sites |
+| `/design-consultation` | Design system creation |
+| `/plan-design-review` | Design review of plans |
+| `/plan-eng-review` | Engineering review of plans |
+| `/qa` | Systematic QA testing + bug fixing |
+| `/ship` | Version bump, changelog, merge to main |
+| `/review` | Pre-landing PR code review |
+| `/office-hours` | Brainstorming and idea validation |
 
 ### Repository Setup
 
-Your repository should have:
+The pipeline enforces a strict branching model on your target repo:
 
-1. A `development` branch (the pipeline targets this for all feature PRs)
-2. Branch protection on `main` (only `development` can merge to it)
-3. A remote on GitHub (`gh repo view` must work)
-
-To set this up automatically:
-
-```bash
-/protectrepo
 ```
+feature branches --> development --> main
+```
+
+- Direct commits to `main` and `development` are blocked
+- `main` can only be merged from `development`
+- `development` can only be merged from feature branches
+
+Phase 0 checks this automatically and runs `/protectrepo` if it's not set up.
 
 ## Installation
 
-### Option 1: Copy to user skills (recommended)
-
 ```bash
-# Clone this repo
+# Clone
 git clone https://github.com/lendtrain/complete-pipeline.git
+cd complete-pipeline
 
-# Copy the skill to your Claude Code skills directory
-cp -r complete-pipeline ~/.claude/skills/full-pipeline
+# Install everything to ~/.claude/
+./install.sh
 ```
 
-### Option 2: Symlink
-
-```bash
-git clone https://github.com/lendtrain/complete-pipeline.git ~/Projects/complete-pipeline
-ln -s ~/Projects/complete-pipeline ~/.claude/skills/full-pipeline
-```
+The install script copies:
+- The main `/full-pipeline` skill to `~/.claude/skills/full-pipeline/`
+- All commands to `~/.claude/commands/` (skips any that already exist)
+- All skills to `~/.claude/skills/` (skips any that already exist)
 
 ### Verify Installation
 
-Start a new Claude Code session and check the skill appears:
+Start a new Claude Code session and check:
 
 ```
 > /full-pipeline
